@@ -93,6 +93,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		this.readerContext = readerContext;
+		// 获取doc的root的节点，通过该节点能够访问所有的子节点
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -126,6 +127,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// then ultimately reset this.delegate back to its original (parent) reference.
 		// this behavior emulates a stack of delegates without actually necessitating one.
 		BeanDefinitionParserDelegate parent = this.delegate;
+		// 处理beanDefinition的过程委托给BeanDefinitionParserDelegate实例对象来完成
 		this.delegate = createDelegate(getReaderContext(), root, parent);
 
 		if (this.delegate.isDefaultNamespace(root)) {
@@ -146,6 +148,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		preProcessXml(root);
+		// 核心方法
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -154,7 +157,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 	protected BeanDefinitionParserDelegate createDelegate(
 			XmlReaderContext readerContext, Element root, @Nullable BeanDefinitionParserDelegate parentDelegate) {
-
+		// 处理beanDefinition的过程委托给BeanDefinitionParserDelegate实例对象来完成
 		BeanDefinitionParserDelegate delegate = new BeanDefinitionParserDelegate(readerContext);
 		delegate.initDefaults(root, parentDelegate);
 		return delegate;
@@ -168,6 +171,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
 		if (delegate.isDefaultNamespace(root)) {
 			NodeList nl = root.getChildNodes();
+			// 遍历所有节点， 做对应的解析工作
+			// 如遍历到<import>标签及诶按就调用 ImportBeanDefinitionResource(ele) 方法对应处理
+			// 遍历到<bean> 标签就调用processBeanDefinition(ele, delegate)方法对应处理
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node node = nl.item(i);
 				if (node instanceof Element) {
@@ -176,6 +182,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						// 对应用户自定义节点处理方法
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -187,15 +194,19 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	}
 
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
+		// 解析<import>标签
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			importBeanDefinitionResource(ele);
 		}
+		// 解析<alias>标签
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
 			processAliasRegistration(ele);
 		}
+		// 解析<bean>标签,最常用，过程最复杂
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
+		// 解析<beans>标签
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
 			// recurse
 			doRegisterBeanDefinitions(ele);
@@ -303,10 +314,12 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		// 该对象持有beanDefinition的name和alias，可以使用该对象完成beanDefinition向容器注册
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
+				 // 注册最终被修饰的bean实例，下文注册beanDefinition到容器方法会讲解
 				// Register the final decorated instance.
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}

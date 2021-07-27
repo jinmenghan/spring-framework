@@ -387,7 +387,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
+			// 从资源对象中加载Document对象，大致过程为：将resource资源文件的内容读入到document中
+			// DocumentLoader在容器读取xml文件过程中悠着举足轻重的作用！
+			// XmlBeanDefinitionReader实例化时会创建一个DefaultDocumentLoader型的石油属性，继而调用loadDocument方法
+			// inputSource -- 要加载的文档输入源
 			Document doc = doLoadDocument(inputSource, resource);
+			// 将document文件的bean封装成BeanDefinition,并注册到容器
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -506,7 +511,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 获取到 DefaultBeanDefinitionDocumentReader 实例
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 获取容器中的bean 的数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		return getRegistry().getBeanDefinitionCount() - countBefore;

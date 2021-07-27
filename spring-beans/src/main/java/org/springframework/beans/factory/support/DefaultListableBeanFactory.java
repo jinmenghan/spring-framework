@@ -989,6 +989,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		// beanDefinitionMap是个ConcurrentHashMap类型的数据结构，用于存放beanDefinition，他的key值是beanName
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
 			if (!isAllowBeanDefinitionOverriding()) {
@@ -1016,6 +1017,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 讲获取到的BeanDefinition放入map中，容器操作使用bean时通过这个HashMap叨叨对应具体的BeanDefinition
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
