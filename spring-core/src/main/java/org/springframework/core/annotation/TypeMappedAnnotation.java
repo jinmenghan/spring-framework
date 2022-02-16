@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2020 the original author or authors.
+ * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,20 +69,16 @@ import org.springframework.util.ReflectionUtils;
  */
 final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnnotation<A> {
 
-	private static final Map<Class<?>, Object> EMPTY_ARRAYS;
-	static {
-		Map<Class<?>, Object> emptyArrays = new HashMap<>();
-		emptyArrays.put(boolean.class, new boolean[0]);
-		emptyArrays.put(byte.class, new byte[0]);
-		emptyArrays.put(char.class, new char[0]);
-		emptyArrays.put(double.class, new double[0]);
-		emptyArrays.put(float.class, new float[0]);
-		emptyArrays.put(int.class, new int[0]);
-		emptyArrays.put(long.class, new long[0]);
-		emptyArrays.put(short.class, new short[0]);
-		emptyArrays.put(String.class, new String[0]);
-		EMPTY_ARRAYS = Collections.unmodifiableMap(emptyArrays);
-	}
+	private static final Map<Class<?>, Object> EMPTY_ARRAYS = Map.of(
+		boolean.class, new boolean[0],
+		byte.class, new byte[0],
+		char.class, new char[0],
+		double.class, new double[0],
+		float.class, new float[0],
+		int.class, new int[0],
+		long.class, new long[0],
+		short.class, new short[0],
+		String.class, new String[0]);
 
 
 	private final AnnotationTypeMapping mapping;
@@ -439,8 +434,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 			}
 			value = names;
 		}
-		else if (value instanceof String[] && type == Class[].class) {
-			String[] names = (String[]) value;
+		else if (value instanceof String[] names && type == Class[].class) {
 			Class<?>[] classes = new Class<?>[names.length];
 			for (int i = 0; i < names.length; i++) {
 				classes[i] = ClassUtils.resolveClassName(names[i], getClassLoader());
@@ -573,7 +567,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 		}
 		if (this.source != null) {
 			if (this.source instanceof Class) {
-				return ((Class<?>) source).getClassLoader();
+				return ((Class<?>) this.source).getClassLoader();
 			}
 			if (this.source instanceof Member) {
 				((Member) this.source).getDeclaringClass().getClassLoader();

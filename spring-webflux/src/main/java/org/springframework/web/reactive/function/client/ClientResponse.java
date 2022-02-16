@@ -182,6 +182,18 @@ public interface ClientResponse {
 	Mono<WebClientResponseException> createException();
 
 	/**
+	 * Create a {@code Mono} that terminates with a
+	 * {@link WebClientResponseException}, containing the response status,
+	 * headers, body, and the originating request.
+	 * @param <T> the reified type
+	 * @return a {@code Mono} that fails with a
+	 * {@link WebClientResponseException}.
+	 * @see #createException()
+	 * @since 6.0
+	 */
+	<T> Mono<T> createError();
+
+	/**
 	 * Return a log message prefix to use to correlate messages for this exchange.
 	 * <p>The prefix is based on {@linkplain ClientRequest#logPrefix()}, which
 	 * itself is based on the value of the {@link ClientRequest#LOG_ID_ATTRIBUTE
@@ -193,9 +205,9 @@ public interface ClientResponse {
 	String logPrefix();
 
 	/**
-	 * Return a builder to mutate the this response, for example to change
+	 * Return a builder to mutate this response, for example to change
 	 * the status, headers, cookies, and replace or transform the body.
-	 * @return a builder to mutate the request with
+	 * @return a builder to mutate the response with
 	 * @since 5.3
 	 */
 	default Builder mutate() {

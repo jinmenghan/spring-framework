@@ -236,8 +236,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		setSource(original.getSource());
 		copyAttributesFrom(original);
 
-		if (original instanceof AbstractBeanDefinition) {
-			AbstractBeanDefinition originalAbd = (AbstractBeanDefinition) original;
+		if (original instanceof AbstractBeanDefinition originalAbd) {
 			if (originalAbd.hasBeanClass()) {
 				setBeanClass(originalAbd.getBeanClass());
 			}
@@ -313,8 +312,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		setSource(other.getSource());
 		copyAttributesFrom(other);
 
-		if (other instanceof AbstractBeanDefinition) {
-			AbstractBeanDefinition otherAbd = (AbstractBeanDefinition) other;
+		if (other instanceof AbstractBeanDefinition otherAbd) {
 			if (otherAbd.hasBeanClass()) {
 				setBeanClass(otherAbd.getBeanClass());
 			}
@@ -392,13 +390,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Override
 	@Nullable
 	public String getBeanClassName() {
-		Object beanClassObject = this.beanClass;
-		if (beanClassObject instanceof Class) {
-			return ((Class<?>) beanClassObject).getName();
-		}
-		else {
-			return (String) beanClassObject;
-		}
+		return (this.beanClass instanceof Class<?> clazz ? clazz.getName() : (String) this.beanClass);
 	}
 
 	/**
@@ -435,11 +427,11 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		if (beanClassObject == null) {
 			throw new IllegalStateException("No bean class specified on bean definition");
 		}
-		if (!(beanClassObject instanceof Class)) {
+		if (!(beanClassObject instanceof Class<?> clazz)) {
 			throw new IllegalStateException(
 					"Bean class name [" + beanClassObject + "] has not been resolved into an actual Class");
 		}
-		return (Class<?>) beanClassObject;
+		return clazz;
 	}
 
 	/**
@@ -1104,8 +1096,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Override
 	@Nullable
 	public BeanDefinition getOriginatingBeanDefinition() {
-		return (this.resource instanceof BeanDefinitionResource ?
-				((BeanDefinitionResource) this.resource).getBeanDefinition() : null);
+		return (this.resource instanceof BeanDefinitionResource bdr ? bdr.getBeanDefinition() : null);
 	}
 
 	/**
@@ -1178,10 +1169,9 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		if (this == other) {
 			return true;
 		}
-		if (!(other instanceof AbstractBeanDefinition)) {
+		if (!(other instanceof AbstractBeanDefinition that)) {
 			return false;
 		}
-		AbstractBeanDefinition that = (AbstractBeanDefinition) other;
 		return (ObjectUtils.nullSafeEquals(getBeanClassName(), that.getBeanClassName()) &&
 				ObjectUtils.nullSafeEquals(this.scope, that.scope) &&
 				this.abstractFlag == that.abstractFlag &&

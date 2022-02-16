@@ -218,24 +218,15 @@ public abstract class StringUtils {
 	 * @param str the {@code String} to check
 	 * @return the trimmed {@code String}
 	 * @see java.lang.Character#isWhitespace
+	 * @deprecated in favor of {@link String#strip()}
 	 */
+	@Deprecated
 	public static String trimWhitespace(String str) {
 		if (!hasLength(str)) {
 			return str;
 		}
 
-		int beginIndex = 0;
-		int endIndex = str.length() - 1;
-
-		while (beginIndex <= endIndex && Character.isWhitespace(str.charAt(beginIndex))) {
-			beginIndex++;
-		}
-
-		while (endIndex > beginIndex && Character.isWhitespace(str.charAt(endIndex))) {
-			endIndex--;
-		}
-
-		return str.substring(beginIndex, endIndex + 1);
+		return str.strip();
 	}
 
 	/**
@@ -266,17 +257,15 @@ public abstract class StringUtils {
 	 * @param str the {@code String} to check
 	 * @return the trimmed {@code String}
 	 * @see java.lang.Character#isWhitespace
+	 * @deprecated in favor of {@link String#stripLeading()}
 	 */
+	@Deprecated
 	public static String trimLeadingWhitespace(String str) {
 		if (!hasLength(str)) {
 			return str;
 		}
 
-		int beginIdx = 0;
-		while (beginIdx < str.length() && Character.isWhitespace(str.charAt(beginIdx))) {
-			beginIdx++;
-		}
-		return str.substring(beginIdx);
+		return str.stripLeading();
 	}
 
 	/**
@@ -284,17 +273,15 @@ public abstract class StringUtils {
 	 * @param str the {@code String} to check
 	 * @return the trimmed {@code String}
 	 * @see java.lang.Character#isWhitespace
+	 * @deprecated in favor of {@link String#stripTrailing()}
 	 */
+	@Deprecated
 	public static String trimTrailingWhitespace(String str) {
 		if (!hasLength(str)) {
 			return str;
 		}
 
-		int endIdx = str.length() - 1;
-		while (endIdx >= 0 && Character.isWhitespace(str.charAt(endIdx))) {
-			endIdx--;
-		}
-		return str.substring(0, endIdx + 1);
+		return str.stripTrailing();
 	}
 
 	/**
@@ -571,7 +558,7 @@ public abstract class StringUtils {
 
 	/**
 	 * Extract the filename from the given Java resource path,
-	 * e.g. {@code "mypath/myfile.txt" -> "myfile.txt"}.
+	 * e.g. {@code "mypath/myfile.txt" &rarr; "myfile.txt"}.
 	 * @param path the file path (may be {@code null})
 	 * @return the extracted filename, or {@code null} if none
 	 */
@@ -587,7 +574,7 @@ public abstract class StringUtils {
 
 	/**
 	 * Extract the filename extension from the given Java resource path,
-	 * e.g. "mypath/myfile.txt" -> "txt".
+	 * e.g. "mypath/myfile.txt" &rarr; "txt".
 	 * @param path the file path (may be {@code null})
 	 * @return the extracted filename extension, or {@code null} if none
 	 */
@@ -612,7 +599,7 @@ public abstract class StringUtils {
 
 	/**
 	 * Strip the filename extension from the given Java resource path,
-	 * e.g. "mypath/myfile.txt" -> "mypath/myfile".
+	 * e.g. "mypath/myfile.txt" &rarr; "mypath/myfile".
 	 * @param path the file path
 	 * @return the path with stripped filename extension
 	 */
@@ -667,7 +654,9 @@ public abstract class StringUtils {
 		if (!hasLength(path)) {
 			return path;
 		}
-		String pathToUse = replace(path, WINDOWS_FOLDER_SEPARATOR, FOLDER_SEPARATOR);
+
+		String normalizedPath = replace(path, WINDOWS_FOLDER_SEPARATOR, FOLDER_SEPARATOR);
+		String pathToUse = normalizedPath;
 
 		// Shortcut if there is no work to do
 		if (pathToUse.indexOf('.') == -1) {
@@ -695,7 +684,8 @@ public abstract class StringUtils {
 		}
 
 		String[] pathArray = delimitedListToStringArray(pathToUse, FOLDER_SEPARATOR);
-		Deque<String> pathElements = new ArrayDeque<>();
+		// we never require more elements than pathArray and in the common case the same number
+		Deque<String> pathElements = new ArrayDeque<>(pathArray.length);
 		int tops = 0;
 
 		for (int i = pathArray.length - 1; i >= 0; i--) {
@@ -721,7 +711,7 @@ public abstract class StringUtils {
 
 		// All path elements stayed the same - shortcut
 		if (pathArray.length == pathElements.size()) {
-			return prefix + pathToUse;
+			return normalizedPath;
 		}
 		// Remaining top paths need to be retained.
 		for (int i = 0; i < tops; i++) {
@@ -732,7 +722,9 @@ public abstract class StringUtils {
 			pathElements.addFirst(CURRENT_PATH);
 		}
 
-		return prefix + collectionToDelimitedString(pathElements, FOLDER_SEPARATOR);
+		final String joined = collectionToDelimitedString(pathElements, FOLDER_SEPARATOR);
+		// avoid string concatenation with empty prefix
+		return prefix.isEmpty() ? joined : prefix + joined;
 	}
 
 	/**
@@ -857,7 +849,7 @@ public abstract class StringUtils {
 			// code sans the separator between the country code and the variant.
 			int endIndexOfCountryCode = localeString.indexOf(country, language.length()) + country.length();
 			// Strip off any leading '_' and whitespace, what's left is the variant.
-			variant = trimLeadingWhitespace(localeString.substring(endIndexOfCountryCode));
+			variant = localeString.substring(endIndexOfCountryCode).stripLeading();
 			if (variant.startsWith("_")) {
 				variant = trimLeadingCharacter(variant, '_');
 			}
@@ -879,18 +871,6 @@ public abstract class StringUtils {
 						"Locale part \"" + localePart + "\" contains invalid characters");
 			}
 		}
-	}
-
-	/**
-	 * Determine the RFC 3066 compliant language tag,
-	 * as used for the HTTP "Accept-Language" header.
-	 * @param locale the Locale to transform to a language tag
-	 * @return the RFC 3066 compliant language tag as {@code String}
-	 * @deprecated as of 5.0.4, in favor of {@link Locale#toLanguageTag()}
-	 */
-	@Deprecated
-	public static String toLanguageTag(Locale locale) {
-		return locale.getLanguage() + (hasText(locale.getCountry()) ? "-" + locale.getCountry() : "");
 	}
 
 	/**
@@ -976,37 +956,6 @@ public abstract class StringUtils {
 		System.arraycopy(array1, 0, newArr, 0, array1.length);
 		System.arraycopy(array2, 0, newArr, array1.length, array2.length);
 		return newArr;
-	}
-
-	/**
-	 * Merge the given {@code String} arrays into one, with overlapping
-	 * array elements only included once.
-	 * <p>The order of elements in the original arrays is preserved
-	 * (with the exception of overlapping elements, which are only
-	 * included on their first occurrence).
-	 * @param array1 the first array (can be {@code null})
-	 * @param array2 the second array (can be {@code null})
-	 * @return the new array ({@code null} if both given arrays were {@code null})
-	 * @deprecated as of 4.3.15, in favor of manual merging via {@link LinkedHashSet}
-	 * (with every entry included at most once, even entries within the first array)
-	 */
-	@Deprecated
-	@Nullable
-	public static String[] mergeStringArrays(@Nullable String[] array1, @Nullable String[] array2) {
-		if (ObjectUtils.isEmpty(array1)) {
-			return array2;
-		}
-		if (ObjectUtils.isEmpty(array2)) {
-			return array1;
-		}
-
-		List<String> result = new ArrayList<>(Arrays.asList(array1));
-		for (String str : array2) {
-			if (!result.contains(str)) {
-				result.add(str);
-			}
-		}
-		return toStringArray(result);
 	}
 
 	/**
@@ -1294,7 +1243,12 @@ public abstract class StringUtils {
 			return "";
 		}
 
-		StringBuilder sb = new StringBuilder();
+		int totalLength = coll.size() * (prefix.length() + suffix.length()) + (coll.size() - 1) * delim.length();
+		for (Object element : coll) {
+			totalLength += String.valueOf(element).length();
+		}
+
+		StringBuilder sb = new StringBuilder(totalLength);
 		Iterator<?> it = coll.iterator();
 		while (it.hasNext()) {
 			sb.append(prefix).append(it.next()).append(suffix);

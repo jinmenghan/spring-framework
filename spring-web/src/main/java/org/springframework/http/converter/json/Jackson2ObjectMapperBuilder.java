@@ -55,13 +55,11 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import org.apache.commons.logging.Log;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.KotlinDetector;
-import org.springframework.http.HttpLogging;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -85,9 +83,7 @@ import org.springframework.util.xml.StaxUtils;
  * <li><a href="https://github.com/FasterXML/jackson-datatype-jdk8">jackson-datatype-jdk8</a>:
  * support for other Java 8 types like {@link java.util.Optional}</li>
  * <li><a href="https://github.com/FasterXML/jackson-datatype-jsr310">jackson-datatype-jsr310</a>:
- * support for Java 8 Date & Time API types</li>
- * <li><a href="https://github.com/FasterXML/jackson-datatype-joda">jackson-datatype-joda</a>:
- * support for Joda-Time types</li>
+ * support for Java 8 Date &amp; Time API types</li>
  * <li><a href="https://github.com/FasterXML/jackson-module-kotlin">jackson-module-kotlin</a>:
  * support for Kotlin classes and data classes</li>
  * </ul>
@@ -104,8 +100,6 @@ import org.springframework.util.xml.StaxUtils;
  * @see Jackson2ObjectMapperFactoryBean
  */
 public class Jackson2ObjectMapperBuilder {
-
-	private final Log logger = HttpLogging.forLogName(getClass());
 
 	private final Map<Class<?>, Class<?>> mixIns = new LinkedHashMap<>();
 
@@ -838,19 +832,6 @@ public class Jackson2ObjectMapperBuilder {
 		}
 		catch (ClassNotFoundException ex) {
 			// jackson-datatype-jsr310 not available
-		}
-
-		// Joda-Time 2.x present?
-		if (ClassUtils.isPresent("org.joda.time.YearMonth", this.moduleClassLoader)) {
-			try {
-				Class<? extends Module> jodaModuleClass = (Class<? extends Module>)
-						ClassUtils.forName("com.fasterxml.jackson.datatype.joda.JodaModule", this.moduleClassLoader);
-				Module jodaModule = BeanUtils.instantiateClass(jodaModuleClass);
-				modulesToRegister.set(jodaModule.getTypeId(), jodaModule);
-			}
-			catch (ClassNotFoundException ex) {
-				// jackson-datatype-joda not available
-			}
 		}
 
 		// Kotlin present?

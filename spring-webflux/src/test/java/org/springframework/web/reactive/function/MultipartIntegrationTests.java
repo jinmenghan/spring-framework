@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2019 the original author or authors.
+ * Copyright 2002-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Map;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
@@ -46,6 +49,7 @@ import org.springframework.web.testfixture.http.server.reactive.bootstrap.Undert
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 /**
@@ -72,7 +76,8 @@ class MultipartIntegrationTests extends AbstractRouterFunctionIntegrationTests {
 		StepVerifier
 				.create(result)
 				.consumeNextWith(entity -> assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK))
-				.verifyComplete();
+				.expectComplete()
+				.verify(Duration.ofSeconds(5));
 	}
 
 	@ParameterizedHttpServerTest
@@ -89,15 +94,26 @@ class MultipartIntegrationTests extends AbstractRouterFunctionIntegrationTests {
 		StepVerifier
 				.create(result)
 				.consumeNextWith(entity -> assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK))
-				.verifyComplete();
+				.expectComplete()
+				.verify(Duration.ofSeconds(5));
 	}
 
 	@ParameterizedHttpServerTest
 	void transferTo(HttpServer httpServer) throws Exception {
-		// TODO: check why Undertow fails
-		if (httpServer instanceof UndertowHttpServer) {
-			return;
-		}
+		// TODO Determine why Undertow fails: https://github.com/spring-projects/spring-framework/issues/25310
+		assumeFalse(httpServer instanceof UndertowHttpServer, "Undertow currently fails with transferTo");
+
+		verifyTransferTo(httpServer);
+	}
+
+	@Disabled("Unstable on Undertow: https://github.com/spring-projects/spring-framework/issues/25310")
+	// Using @RepeatedTest(100), this test fails approximately 10% - 20% of the time.
+	@Test
+	void transferToWithUndertow() throws Exception {
+		verifyTransferTo(new UndertowHttpServer());
+	}
+
+	private void verifyTransferTo(HttpServer httpServer) throws Exception {
 		startServer(httpServer);
 
 		Mono<String> result = webClient
@@ -119,7 +135,8 @@ class MultipartIntegrationTests extends AbstractRouterFunctionIntegrationTests {
 						fail("IOException", ex);
 					}
 				})
-				.verifyComplete();
+				.expectComplete()
+				.verify(Duration.ofSeconds(5));
 	}
 
 	private MultiValueMap<String, HttpEntity<?>> generateBody() {
@@ -193,8 +210,7 @@ class MultipartIntegrationTests extends AbstractRouterFunctionIntegrationTests {
 				catch (IOException ex) {
 					return Mono.error(ex);
 				}
-			})
-					.subscribeOn(Schedulers.boundedElastic());
+			}).subscribeOn(Schedulers.boundedElastic());
 		}
 
 	}

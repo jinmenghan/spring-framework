@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2019 the original author or authors.
+ * Copyright 2002-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ package org.springframework.aop.aspectj.autoproxy;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
+import java.util.function.Supplier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -29,6 +28,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.aop.MethodBeforeAdvice;
 import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
@@ -40,18 +41,21 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.testfixture.beans.ITestBean;
 import org.springframework.beans.testfixture.beans.TestBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.lang.Nullable;
-import org.springframework.util.StopWatch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,9 +69,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Sam Brannen
  */
 public class AspectJAutoProxyCreatorTests {
-
-	private static final Log factoryLog = LogFactory.getLog(DefaultListableBeanFactory.class);
-
 
 	@Test
 	public void testAspectsAreApplied() {
@@ -299,6 +300,16 @@ public class AspectJAutoProxyCreatorTests {
 		assertThat(tb.getAge()).isEqualTo(68);
 	}
 
+	@ParameterizedTest(name = "[{index}] {0}")
+	@ValueSource(classes = {ProxyTargetClassFalseConfig.class, ProxyTargetClassTrueConfig.class})
+	void lambdaIsAlwaysProxiedWithJdkProxy(Class<?> configClass) {
+		try (ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(configClass)) {
+			Supplier<?> supplier = context.getBean(Supplier.class);
+			assertThat(AopUtils.isAopProxy(supplier)).as("AOP proxy").isTrue();
+			assertThat(AopUtils.isJdkDynamicProxy(supplier)).as("JDK Dynamic proxy").isTrue();
+			assertThat(supplier.get()).asString().isEqualTo("advised: lambda");
+		}
+	}
 
 	/**
 	 * Returns a new {@link ClassPathXmlApplicationContext} for the file ending in <var>fileSuffix</var>.
@@ -314,12 +325,6 @@ public class AspectJAutoProxyCreatorTests {
 	 */
 	private String qName(String fileSuffix) {
 		return String.format("%s-%s", getClass().getSimpleName(), fileSuffix);
-	}
-
-	private void assertStopWatchTimeLimit(final StopWatch sw, final long maxTimeMillis) {
-		long totalTimeMillis = sw.getTotalTimeMillis();
-		assertThat(totalTimeMillis < maxTimeMillis).as("'" + sw.getLastTaskName() + "' took too long: expected less than<" + maxTimeMillis +
-				"> ms, actual<" + totalTimeMillis + "> ms.").isTrue();
 	}
 
 }
@@ -570,12 +575,7 @@ class TestBeanAdvisor extends StaticMethodMatcherPointcutAdvisor {
 	public int count;
 
 	public TestBeanAdvisor() {
-		setAdvice(new MethodBeforeAdvice() {
-			@Override
-			public void before(Method method, Object[] args, @Nullable Object target) throws Throwable {
-				++count;
-			}
-		});
+		setAdvice((MethodBeforeAdvice) (method, args, target) -> ++count);
 	}
 
 	@Override
@@ -583,4 +583,36 @@ class TestBeanAdvisor extends StaticMethodMatcherPointcutAdvisor {
 		return ITestBean.class.isAssignableFrom(targetClass);
 	}
 
+}
+
+abstract class AbstractProxyTargetClassConfig {
+
+	@Bean
+	Supplier<String> stringSupplier() {
+		return () -> "lambda";
+	}
+
+	@Bean
+	SupplierAdvice supplierAdvice() {
+		return new SupplierAdvice();
+	}
+
+	@Aspect
+	static class SupplierAdvice {
+
+		@Around("execution(public * org.springframework.aop.aspectj.autoproxy..*.*(..))")
+		Object aroundSupplier(ProceedingJoinPoint joinPoint) throws Throwable {
+			return "advised: " + joinPoint.proceed();
+		}
+	}
+}
+
+@Configuration(proxyBeanMethods = false)
+@EnableAspectJAutoProxy(proxyTargetClass = false)
+class ProxyTargetClassFalseConfig extends AbstractProxyTargetClassConfig {
+}
+
+@Configuration(proxyBeanMethods = false)
+@EnableAspectJAutoProxy(proxyTargetClass = true)
+class ProxyTargetClassTrueConfig extends AbstractProxyTargetClassConfig {
 }
