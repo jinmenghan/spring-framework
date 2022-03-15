@@ -177,9 +177,11 @@ public class UrlResource extends AbstractFileResolvingResource {
 	 * @see java.net.URL#openConnection()
 	 * @see java.net.URLConnection#setUseCaches(boolean)
 	 * @see java.net.URLConnection#getInputStream()
+	 *
 	 */
 	@Override
 	public InputStream getInputStream() throws IOException {
+		// 通过对应的连接获取inputSteam
 		URLConnection con = this.url.openConnection();
 		ResourceUtils.useCachesIfNecessary(con);
 		try {

@@ -170,6 +170,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	 * This implementation opens an InputStream for the given class path resource.
 	 * @see java.lang.ClassLoader#getResourceAsStream(String)
 	 * @see java.lang.Class#getResourceAsStream(String)
+	 * 就是通过ClassLoader的底层方法加载，没有特殊的地方。
 	 */
 	@Override
 	public InputStream getInputStream() throws IOException {

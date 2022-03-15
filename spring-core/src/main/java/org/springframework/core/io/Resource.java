@@ -48,6 +48,10 @@ import org.springframework.lang.Nullable;
  * @see ClassPathResource
  * @see ByteArrayResource
  * @see InputStreamResource
+ * resouce是什么接口呢？
+ * InputStreamSource接口有事干什么的呢？
+ *
+ * 各个Resource的实现类有什么区别呢
  */
 public interface Resource extends InputStreamSource {
 
@@ -100,6 +104,7 @@ public interface Resource extends InputStreamSource {
 	 * Return a URL handle for this resource.
 	 * @throws IOException if the resource cannot be resolved as URL,
 	 * i.e. if the resource is not available as descriptor
+	 * 可以将资源转换为URL
 	 */
 	URL getURL() throws IOException;
 
@@ -108,6 +113,7 @@ public interface Resource extends InputStreamSource {
 	 * @throws IOException if the resource cannot be resolved as URI,
 	 * i.e. if the resource is not available as descriptor
 	 * @since 2.5
+	 * 可以将资源转换为URI
 	 */
 	URI getURI() throws IOException;
 
@@ -117,6 +123,7 @@ public interface Resource extends InputStreamSource {
 	 * absolute file path, i.e. if the resource is not available in a file system
 	 * @throws IOException in case of general resolution/reading failures
 	 * @see #getInputStream()
+	 * 可以将资源转换成File
 	 */
 	File getFile() throws IOException;
 
@@ -162,6 +169,7 @@ public interface Resource extends InputStreamSource {
 	 * part of the path: for example, "myfile.txt".
 	 * <p>Returns {@code null} if this type of resource does not
 	 * have a filename.
+	 * 获取文件的名称
 	 */
 	@Nullable
 	String getFilename();
@@ -172,6 +180,7 @@ public interface Resource extends InputStreamSource {
 	 * <p>Implementations are also encouraged to return this value
 	 * from their {@code toString} method.
 	 * @see Object#toString()
+	 * 可用于日志的信息的打印
 	 */
 	String getDescription();
 

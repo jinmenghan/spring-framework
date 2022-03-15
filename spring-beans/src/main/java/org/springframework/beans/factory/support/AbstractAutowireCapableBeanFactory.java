@@ -173,9 +173,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	public AbstractAutowireCapableBeanFactory() {
 		super();
-		ignoreDependencyInterface(BeanNameAware.class);
-		ignoreDependencyInterface(BeanFactoryAware.class);
+		ignoreDependencyInterface(BeanNameAware.class); // 这个方法是干什么的？
+		ignoreDependencyInterface(BeanFactoryAware.class);  // 为什么在初始的时候调用他
 		ignoreDependencyInterface(BeanClassLoaderAware.class);
+		/*
+		BeanNameAware, --》 setBeanName(String)
+		BeanFactoryAware, --》 setBeanFactory(BeanFactory)
+		BeanClassLoaderAware --》 setBeanClassLoader(ClassLoader)
+		都继承了Aware接口,并各自有自己的方法
+
+		 */
 	}
 
 	/**
@@ -276,6 +283,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see org.springframework.context.ApplicationContextAware
 	 */
 	public void ignoreDependencyInterface(Class<?> ifc) {
+		// ignoredDependencyInterfaces 就是一个HashSet集合
 		this.ignoredDependencyInterfaces.add(ifc);
 	}
 
@@ -1600,6 +1608,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return whether the bean property is excluded
 	 * @see #ignoreDependencyType(Class)
 	 * @see #ignoreDependencyInterface(Class)
+	 *
+	 * Bean的属性是否要从依赖中排除掉
+	 * 也就是说你有一个bean，bean的某个属性能否被注入对应的依赖，还得要看你这个
+	 * 属性对应的类是否实现了BeanNameAware、BeanFactoryAware、BeanClassLoaderAware这些接口
 	 */
 	protected boolean isExcludedFromDependencyCheck(PropertyDescriptor pd) {
 		return (AutowireUtils.isExcludedFromDependencyCheck(pd) ||

@@ -183,6 +183,7 @@ public class FileSystemResource extends AbstractResource implements WritableReso
 	@Override
 	public InputStream getInputStream() throws IOException {
 		try {
+			// 通过JDK的底层方法，根据文件路径去加载资源的inputSteam
 			return Files.newInputStream(this.filePath);
 		}
 		catch (NoSuchFileException ex) {

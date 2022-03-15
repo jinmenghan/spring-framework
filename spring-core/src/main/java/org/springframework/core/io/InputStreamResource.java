@@ -98,6 +98,7 @@ public class InputStreamResource extends AbstractResource {
 					"do not use InputStreamResource if a stream needs to be read multiple times");
 		}
 		this.read = true;
+		// InputSteamResource本身就包含inputSteam，所以就直接返回了
 		return this.inputStream;
 	}
 

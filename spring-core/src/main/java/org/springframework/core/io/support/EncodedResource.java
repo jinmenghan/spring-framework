@@ -59,6 +59,9 @@ public class EncodedResource implements InputStreamSource {
 	 * @param resource the {@code Resource} to hold (never {@code null})
 	 */
 	public EncodedResource(Resource resource) {
+		// encoding 编码
+		// charset 字符集
+		// 使用默认的null值来加载
 		this(resource, null, null);
 	}
 
@@ -93,6 +96,7 @@ public class EncodedResource implements InputStreamSource {
 
 	/**
 	 * Return the {@code Resource} held by this {@code EncodedResource}.
+	 * 获取加载时候，设置的resource
 	 */
 	public final Resource getResource() {
 		return this.resource;
@@ -136,6 +140,8 @@ public class EncodedResource implements InputStreamSource {
 	 * @see #getInputStream()
 	 */
 	public Reader getReader() throws IOException {
+		// 这里我们会发现 编码和字符集的if中，用了同样的 resource.getInputStream()来获取inputStream
+		// 创建 InputStreamReader
 		if (this.charset != null) {
 			return new InputStreamReader(this.resource.getInputStream(), this.charset);
 		}

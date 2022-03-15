@@ -106,17 +106,28 @@ abstract class AutowireUtils {
 	 * @param pd the PropertyDescriptor of the bean property
 	 * @param interfaces the Set of interfaces (Class objects)
 	 * @return whether the setter method is defined by an interface
+	 *
+	 * 2 点判断
+	 * 一是 bean的属性对应的类，是否实现了BeanAware、BeanFactoryAware、BeanClassLoaderAware中的某个接口
+	 * 二是 bean属性对应的setter方法，在这个三个感知接口中是否也存在相同的方法。
+	 * 如果满足以上两点的话，方法 isSetterDefinedInInterface 就会返回true，
+	 * spring在创建的时候，就不会给该属性创建值了
 	 */
 	public static boolean isSetterDefinedInInterface(PropertyDescriptor pd, Set<Class<?>> interfaces) {
+		// 获取属性的setter方法
 		Method setter = pd.getWriteMethod();
 		if (setter != null) {
+			// 获取属性所在的类
 			Class<?> targetClass = setter.getDeclaringClass();
 			for (Class<?> ifc : interfaces) {
+				// 判断属性所在的类，是否实现了这些感知接口
+				// 并且，在这些感知接口中，是否也存在相同的setter方法
 				if (ifc.isAssignableFrom(targetClass) && ClassUtils.hasMethod(ifc, setter)) {
 					return true;
 				}
 			}
 		}
+
 		return false;
 	}
 

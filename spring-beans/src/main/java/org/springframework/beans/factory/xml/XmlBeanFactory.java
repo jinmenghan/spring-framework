@@ -76,6 +76,11 @@ public class XmlBeanFactory extends DefaultListableBeanFactory {
 	 */
 	public XmlBeanFactory(Resource resource, BeanFactory parentBeanFactory) throws BeansException {
 		super(parentBeanFactory);
+		// 开始读取applicationContext.xml配置文件
+		/*
+		  BeanDefinition 就是bean的定义
+		  每个bean的属性、普通方法、构造方法等相关的信息，都会封装在数据的BeanDefinition中
+		 */
 		this.reader.loadBeanDefinitions(resource);
 	}
 
