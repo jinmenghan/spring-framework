@@ -104,6 +104,16 @@ public class PluggableSchemaResolver implements EntityResolver {
 	}
 
 
+	/*
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    </beans>
+    publicId null
+    systemId https://www.springframework.org/schema/beans/spring-beans.xsd
+	 */
 	@Override
 	@Nullable
 	public InputSource resolveEntity(@Nullable String publicId, @Nullable String systemId) throws IOException {
@@ -113,14 +123,17 @@ public class PluggableSchemaResolver implements EntityResolver {
 		}
 
 		if (systemId != null) {
+			// 1.判断systemId不为空,就从schemaMapping中，通过systemId获取xsd对应的位置路径
 			String resourceLocation = getSchemaMappings().get(systemId);
 			if (resourceLocation == null && systemId.startsWith("https:")) {
 				// Retrieve canonical http schema mapping even for https declaration
 				resourceLocation = getSchemaMappings().get("http:" + systemId.substring(6));
 			}
 			if (resourceLocation != null) {
+				// 2. 如果resourceLocation不为空，就直接从路径中加载相应的资源。
 				Resource resource = new ClassPathResource(resourceLocation, this.classLoader);
 				try {
+					// 3. 将resource封装成InputSource并且返回
 					InputSource source = new InputSource(resource.getInputStream());
 					source.setPublicId(publicId);
 					source.setSystemId(systemId);
@@ -143,6 +156,7 @@ public class PluggableSchemaResolver implements EntityResolver {
 
 	/**
 	 * Load the specified schema mappings lazily.
+	 * systemId 肯定是非空的，就是调用这个方法，通过systemId定位到资源的位置
 	 */
 	private Map<String, String> getSchemaMappings() {
 		Map<String, String> schemaMappings = this.schemaMappings;
@@ -154,11 +168,13 @@ public class PluggableSchemaResolver implements EntityResolver {
 						logger.trace("Loading schema mappings from [" + this.schemaMappingsLocation + "]");
 					}
 					try {
+						// 1.从schemaMappingsLocation中获取所有的属性。
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.schemaMappingsLocation, this.classLoader);
 						if (logger.isTraceEnabled()) {
 							logger.trace("Loaded schema mappings: " + mappings);
 						}
+						// 2. 将所有的属性封装为schemaMappings，并返回
 						schemaMappings = new ConcurrentHashMap<>(mappings.size());
 						CollectionUtils.mergePropertiesIntoMap(mappings, schemaMappings);
 						this.schemaMappings = schemaMappings;

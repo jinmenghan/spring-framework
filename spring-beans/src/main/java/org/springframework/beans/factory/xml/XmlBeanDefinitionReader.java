@@ -395,7 +395,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
-			// 根据输入流和resource创建相应的Document
+			// 根据输入流和resource创建xml文件对应的Document
 			Document doc = doLoadDocument(inputSource, resource);
 			// 解析Document并注册bean到spring容器中
 			int count = registerBeanDefinitions(doc, resource);
@@ -441,6 +441,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	protected Document doLoadDocument(InputSource inputSource, Resource resource) throws Exception {
 		 // 当XmlBeanDefinitionReader构建时，先构造出来，父类AbstractDefinitionReader，构造方法中，给resourceLoader赋值
 		// 委托给了变量documentLoader来执行
+		// getValidationModeForResource() 验证是dtd还是xsd格式的
 		return this.documentLoader.loadDocument(inputSource, getEntityResolver(), this.errorHandler,
 				getValidationModeForResource(resource), isNamespaceAware());
 	}
@@ -454,10 +455,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #detectValidationMode
 	 */
 	protected int getValidationModeForResource(Resource resource) {
+		// 1. 默认获取的校验类型为： VALIDATION_AUTO
 		int validationModeToUse = getValidationMode();
 		if (validationModeToUse != VALIDATION_AUTO) {
 			return validationModeToUse;
 		}
+		// 2. 自动检测校验模式
 		int detectedMode = detectValidationMode(resource);
 		if (detectedMode != VALIDATION_AUTO) {
 			return detectedMode;
@@ -486,6 +489,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 		InputStream inputStream;
 		try {
+			// 1. 获取resource输入流
 			inputStream = resource.getInputStream();
 		}
 		catch (IOException ex) {
@@ -496,6 +500,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		}
 
 		try {
+			// 2. 委托validationModeDetector的detectValidationMode方法检测
 			return this.validationModeDetector.detectValidationMode(inputStream);
 		}
 		catch (IOException ex) {
@@ -518,9 +523,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 1. 通过反射，创建对象DefaultBeanDefinitionDocumentReader
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 2. 获取容器中，已经注入bean的数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		// 3. 通过documentReader解析document，并将解析出来的bean注入到spring容器中
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		// 4. 本次容器容器中bean注入的数量：容器中总的数量 - 本次注入前spring容器的数量
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 
@@ -531,6 +540,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #setDocumentReaderClass
 	 */
 	protected BeanDefinitionDocumentReader createBeanDefinitionDocumentReader() {
+		// 通过反射，创建documentReaderClass类   DefaultBeanDefinitionDocumentReader
 		return BeanUtils.instantiateClass(this.documentReaderClass);
 	}
 

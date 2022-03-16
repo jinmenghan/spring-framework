@@ -412,15 +412,18 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
+		// 1. 获取bean标签中，属性id和name的值
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
+		// 2. 将属性中name的值，通过“，”或者“；”进行切分，并将数据添加到aliases中
 		List<String> aliases = new ArrayList<>();
 		if (StringUtils.hasLength(nameAttr)) {
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 			aliases.addAll(Arrays.asList(nameArr));
 		}
 
+		// 3. 如果id为空，那就去aliases中的第一个value，作为bean的名称
 		String beanName = id;
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
 			beanName = aliases.remove(0);
@@ -433,9 +436,10 @@ public class BeanDefinitionParserDelegate {
 		if (containingBean == null) {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
-
+		// 4.开始深度解析bean标签，并将解析的结果封装为AbstractBeanDefinition
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
+			// beanName不为空，直接跳过
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {
@@ -464,6 +468,7 @@ public class BeanDefinitionParserDelegate {
 					return null;
 				}
 			}
+			// 5. 根据解析到的beanDefinition，beanName和aliases, 创建一个BeanDefinitionHolder
 			String[] aliasesArray = StringUtils.toStringArray(aliases);
 			return new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);
 		}
@@ -503,31 +508,44 @@ public class BeanDefinitionParserDelegate {
 		this.parseState.push(new BeanEntry(beanName));
 
 		String className = null;
+		// 1. 如果bean标签存在class属性，获取class属性的值
 		if (ele.hasAttribute(CLASS_ATTRIBUTE)) {
 			className = ele.getAttribute(CLASS_ATTRIBUTE).trim();
 		}
 		String parent = null;
+		// 2. 如果bean标签存在parent属性，获取parent属性的值
 		if (ele.hasAttribute(PARENT_ATTRIBUTE)) {
 			parent = ele.getAttribute(PARENT_ATTRIBUTE);
 		}
 
 		try {
+			// 3. 通过获取的class和parent的值，初步创建AbstractBeanDefinition
+			// 看看 createBeanDefinition到底在看什么呢，实际上就是创建了一个 GenericBeanDefinition，并将 class和parent设置上，并返回
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
+			// 4. 解析bean标签中各种其他属性，并封装到AbstractBeanDefinition中
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
 
+			// 5. 解析bean标签的各种子标签元素，并将解析结果放入AbstractBeanDefinition中
+
+			// 解析bean的子标签元素：meta
 			parseMetaElements(ele, bd);
+			// 解析bean的子标签元素：lookup-method
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
+			// 解析bean的子标签元素：replace-method
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 
+			// 解析bean的子标签元素：constructor-arg
 			parseConstructorArgElements(ele, bd);
+			// 解析bean的子标签元素：property
 			parsePropertyElements(ele, bd);
+			// 解析bean的子标签元素：qualifier
 			parseQualifierElements(ele, bd);
 
 			bd.setResource(this.readerContext.getResource());
 			bd.setSource(extractSource(ele));
-
+			// 返回bd
 			return bd;
 		}
 		catch (ClassNotFoundException ex) {
@@ -1379,6 +1397,7 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
+		//
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
