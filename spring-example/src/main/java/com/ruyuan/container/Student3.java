@@ -1,11 +1,15 @@
 package com.ruyuan.container;
 
-public class Student {
+public class Student3 {
 
 
 	private String name;
 	private Integer age;
 
+	public Student3(String name, Integer age) {
+		this.name = name;
+		this.age = age;
+	}
 
 	public Integer getAge() {
 		return age;
