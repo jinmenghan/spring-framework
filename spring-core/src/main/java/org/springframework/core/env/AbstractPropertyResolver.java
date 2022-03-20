@@ -140,6 +140,10 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 		Collections.addAll(this.requiredProperties, requiredProperties);
 	}
 
+	/*
+	requiredProperties 存在的属性，
+	如果那个环境变量的值不存在，就会记录到 MissingRequiredPropertiesException中
+	 */
 	@Override
 	public void validateRequiredProperties() {
 		MissingRequiredPropertiesException ex = new MissingRequiredPropertiesException();

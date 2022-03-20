@@ -187,6 +187,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		Assert.notNull(resources, "Resource array must not be null");
 		int count = 0;
 		for (Resource resource : resources) {
+			// 进入方法
 			count += loadBeanDefinitions(resource);
 		}
 		return count;
@@ -222,6 +223,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
+				// 这里跟到重载方法loadBeanDefinitions(String, Set<Resource>)时，发现就会根据xml文件路径加载xml对应的Resource资源了
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
 				int count = loadBeanDefinitions(resources);
 				if (actualResources != null) {
@@ -255,6 +257,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 	public int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException {
 		Assert.notNull(locations, "Location array must not be null");
 		int count = 0;
+		// 依次遍历路径
 		for (String location : locations) {
 			count += loadBeanDefinitions(location);
 		}

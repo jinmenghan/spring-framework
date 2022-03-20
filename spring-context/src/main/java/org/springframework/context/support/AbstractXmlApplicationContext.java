@@ -80,17 +80,21 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
 		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
+		// 1. 初始化xmlBeanDefinitionReader
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 
 		// Configure the bean definition reader with this context's
 		// resource loading environment.
+		// 2. 对xmlBeanDefinitionReader上下文信息的配置
 		beanDefinitionReader.setEnvironment(this.getEnvironment());
 		beanDefinitionReader.setResourceLoader(this);
 		beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
 
 		// Allow a subclass to provide custom initialization of the reader,
 		// then proceed with actually loading the bean definitions.
+		// 3. 空实现，留给子类取自定义xmlBeanDefinitionReader， 扩展点
 		initBeanDefinitionReader(beanDefinitionReader);
+		// 4. 委托beanDefinitionReader取加载xml中的BeanDefinition
 		loadBeanDefinitions(beanDefinitionReader);
 	}
 
@@ -103,6 +107,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader#setDocumentReaderClass
 	 */
 	protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+		// 这个方法中，什么也没有看到
 		reader.setValidating(this.validating);
 	}
 
@@ -123,6 +128,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 		if (configResources != null) {
 			reader.loadBeanDefinitions(configResources);
 		}
+		// 获取我们前面封装好的xml文件名对应的string数组
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
 			reader.loadBeanDefinitions(configLocations);
@@ -139,6 +145,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 */
 	@Nullable
 	protected Resource[] getConfigResources() {
+		//  // 这个方法默认返回null
 		return null;
 	}
 

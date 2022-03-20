@@ -611,8 +611,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void prepareRefresh() {
 		// Switch to active.
+		// 初始化时间
 		this.startupDate = System.currentTimeMillis();
+		// 设置容器状态为closed
 		this.closed.set(false);
+		// 设置active为激活状态
 		this.active.set(true);
 
 		if (logger.isDebugEnabled()) {
@@ -625,10 +628,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		/*
+		1. 空实现，留给子类取实现
+		   目标是在上下文环境中，解析各种${}参数占位符
+		 */
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+		// 大概可以知道这个方法用来校验是否需要某个属性，这样翻译有点牵强，跟进去一看究竟
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...
@@ -653,6 +661,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void initPropertySources() {
 		// For subclasses: do nothing by default.
+		// protected 关键字，留给子类实现
 	}
 
 	/**
