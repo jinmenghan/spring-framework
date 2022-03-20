@@ -102,6 +102,13 @@ public interface PropertyResolver {
 	String resolvePlaceholders(String text);
 
 	/**
+	 * 通过相应的属性值，来解析text中的${}占位符，
+	 * 如果没有默认的属性值替换占位符的话
+	 * 就会报参数的异常 IllegalArgumentException
+	 *
+	 * Y也就是说，我们传入的xml路径参数path中，如果存在占位符${},那方法resolveRequiredPlaceholders就可以解析占位符，
+	 * 毕竟，你要带着 占位符 ${} 的路径获取xml资源可定是找不到xml的
+	 *
 	 * Resolve ${...} placeholders in the given text, replacing them with corresponding
 	 * property values as resolved by {@link #getProperty}. Unresolvable placeholders with
 	 * no default value will cause an IllegalArgumentException to be thrown.
