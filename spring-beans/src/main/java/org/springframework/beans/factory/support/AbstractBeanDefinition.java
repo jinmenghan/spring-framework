@@ -1113,11 +1113,20 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * @throws BeanDefinitionValidationException in case of validation failure
 	 */
 	public void validate() throws BeanDefinitionValidationException {
+		// 如果methodOverride属性不为空，且属性的factoryMethodName也不为空
 		if (hasMethodOverrides() && getFactoryMethodName() != null) {
 			throw new BeanDefinitionValidationException(
 					"Cannot combine factory method with container-generated method overrides: " +
 					"the factory method must create the concrete bean instance.");
 		}
+		/*
+		不知道大家还记得，在上一节在解析lookup-method标签和replaced-method标签时，会将这两个标签需要覆盖的方法名设置到MethodOverrides中，一旦MethodOverrides不为空，这就意味着Spring创建出来bean还要重新覆写这些方法。
+
+		而factoryMethodName属性也就是工厂方法的名称，了解过工厂设计模式的同学应该都知道，通过工厂方法也可以创建一个bean出来，但是这相比于Spring默认的创建方式而言，算是一种不允许外界覆盖bean中方法的创建方式了。
+
+
+		也就是说要么你通过工厂方法创建bean，要么就按Spring普通的方式来创建bean，两者选其一，当然这些后面我们在bean的加载环节会详细讲解，暂时只需要知道这两种创建bean的方式是不一样的，我们这里只能存在其中一种。
+		 */
 		if (hasBeanClass()) {
 			prepareMethodOverrides();
 		}
@@ -1131,6 +1140,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public void prepareMethodOverrides() throws BeanDefinitionValidationException {
 		// Check that lookup methods exist and determine their overloaded status.
 		if (hasMethodOverrides()) {
+			// 如果存在MethodOverrides属性，遍历处理
 			getMethodOverrides().getOverrides().forEach(this::prepareMethodOverride);
 		}
 	}
@@ -1151,6 +1161,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		}
 		else if (count == 1) {
 			// Mark override as not overloaded, to avoid the overhead of arg type checking.
+			// 将override属性设置为false，避免方法的重载
 			mo.setOverloaded(false);
 		}
 	}

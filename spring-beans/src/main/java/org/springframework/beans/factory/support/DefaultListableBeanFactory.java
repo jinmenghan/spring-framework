@@ -243,6 +243,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 * @since 4.1.2
 	 */
 	public boolean isAllowBeanDefinitionOverriding() {
+		/*
+		可以看到方法isAllowBeanDefinitionOverriding的返回结果，取决于成员变量allowBeanDefinitionOverriding，我们再看下allowBeanDefinitionOverriding：
+
+		可以看到，成员变量allowBeanDefinitionOverriding的默认值为true。
+
+		也就是说在默认情况下，如果出现相同名称的多个bean来注册，在Spring容器对应的beanDefinitionMap中是允许被覆盖的，
+		所以这也在暗示我们在配置bean的时候，尽量不要出现相同名称的bean，否则会被覆盖。
+		 */
 		return this.allowBeanDefinitionOverriding;
 	}
 
@@ -929,8 +937,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		Assert.hasText(beanName, "Bean name must not be empty");
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 
+		// 1. 如果beanDefinition是AbstractBeanDefinition实例
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
+				// 1.1 校验beanDefinition中的methodOverride属性
+				// 方法中的代码量比较多，我们依次来看下，首先，beanDefinition肯定是AbstractBeanDefinition的实例，所以调用方法validate进行最后一次校验。
 				((AbstractBeanDefinition) beanDefinition).validate();
 			}
 			catch (BeanDefinitionValidationException ex) {
@@ -938,10 +949,19 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						"Validation of bean definition failed", ex);
 			}
 		}
-
+		// 2. 判断beanDefinitionMap中是否存在 beanName的BeanDefinition， beanDefinitionMap就是spring容器
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
+		/*
+		可以看到，在BeanDefinition第一次来注册时，从beanDefinitionMap中肯定是获取不到任何东西的。
+		走else分支
+		 */
 		if (existingDefinition != null) {
+			// 2.1 如果配置了BeanDefinition不能覆盖，此时就会报错
 			if (!isAllowBeanDefinitionOverriding()) {
+				/*
+				如果方法isAllowBeanDefinitionOverriding返回结果为true，也就是允许相同名称BeanDefinition覆盖Spring容器的Map，
+				可以看到就会将当前bean的名称beanName1，以及相应的BeanDefinition设置到beanDefinitionMap中了。
+				 */
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
 			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
@@ -966,6 +986,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			/*
+				可以看到，首先在if分支上有一个方法isAllowBeanDefinitionOverriding在约束着，
+				通过方法的名称我们可以知道，它是用来判断beanDefinitionMap中的元素是否可以被覆盖的。
+			 */
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
@@ -981,15 +1005,21 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 			}
 			else {
+				// 直接将BeanDefinition放入BeanDefinitionMap中
 				// Still in startup registration phase
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				// 记录bean名字
 				this.beanDefinitionNames.add(beanName);
 				removeManualSingletonName(beanName);
 			}
 			this.frozenBeanDefinitionNames = null;
 		}
-
+		/*
+		如果当前需要注册bean的beanName，已经在spring中存在BeanDefinition
+		或者已经根据BeanDefinition创建出对应的单利bean对象
+		 */
 		if (existingDefinition != null || containsSingleton(beanName)) {
+			// 重新调整beanName对应的缓存
 			resetBeanDefinition(beanName);
 		}
 		else if (isConfigurationFrozen()) {

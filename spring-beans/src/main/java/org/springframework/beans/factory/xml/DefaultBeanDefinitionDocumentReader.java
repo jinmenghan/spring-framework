@@ -322,9 +322,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+
+		// 1. 解析bean标签元素 , 可以看到，果然还是通过我们之前分析的那样委托BeanDefinitionParserDelegate来帮我们解析。
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
-			// 1. 解析bean标签元素 , 可以看到，果然还是通过我们之前分析的那样委托BeanDefinitionParserDelegate来帮我们解析。
+			// 方法decorateBeanDefinitionIfRequired其实是对标签进行进一步的检测，如果发现bean标签中还存在自定义标签，就对自定义标签进行解析，
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.
@@ -335,6 +337,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				getReaderContext().error("Failed to register bean definition with name '" +
 						bdHolder.getBeanName() + "'", ele, ex);
 			}
+			/*
+			最后，当BeanDefinition注册到Spring容器之后会调用fireComponentRegistered方法，
+			发布一个BeanDefinition已经被注册的事件通知而已，当然，一般我们都不需要监听这方面的事件。
+			 */
 			// Send registration event.
 			getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
 		}

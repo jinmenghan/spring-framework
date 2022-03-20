@@ -54,6 +54,10 @@ public class SimpleAliasRegistry implements AliasRegistry {
 		Assert.hasText(name, "'name' must not be empty");
 		Assert.hasText(alias, "'alias' must not be empty");
 		synchronized (this.aliasMap) {
+			/*
+			 如果别名alias和name的名字相同
+			 就不记录该别名，并且从别名map中删除
+			 */
 			if (alias.equals(name)) {
 				this.aliasMap.remove(alias);
 				if (logger.isDebugEnabled()) {
@@ -63,10 +67,19 @@ public class SimpleAliasRegistry implements AliasRegistry {
 			else {
 				String registeredName = this.aliasMap.get(alias);
 				if (registeredName != null) {
+					/*
+					如果根据别名alias，从aliasMap中获取到的beanName和传入的name相同
+					就表明当前的bean的别名已经存在了，就不需要重复注册别名了
+					 */
 					if (registeredName.equals(name)) {
 						// An existing alias - no need to re-register
 						return;
 					}
+					// 如果不允许别名覆盖，就报错
+					/*
+					此时，如果方法allowAliasOverriding返回false，也就是不允许别名被覆盖，
+					也就是说一个别名alias只能注册一个bean的名称不能注册多个bean的名称，事与愿违，这个时候直接就会抛异常了。
+					 */
 					if (!allowAliasOverriding()) {
 						throw new IllegalStateException("Cannot define alias '" + alias + "' for name '" +
 								name + "': It is already registered for name '" + registeredName + "'.");
@@ -76,6 +89,11 @@ public class SimpleAliasRegistry implements AliasRegistry {
 								registeredName + "' with new target name '" + name + "'");
 					}
 				}
+				// 检测别名是否存在循环
+				/*
+				如果registeredName和name不相同，而且因为根据别名alias从aliasMap成功获取了一个非空的bean的名称registeredName了，
+				这就意味着别名alias已经注册了一个bean名称为registeredName了。
+				 */
 				checkForAliasCircle(name, alias);
 				this.aliasMap.put(alias, name);
 				if (logger.isTraceEnabled()) {
@@ -194,6 +212,14 @@ public class SimpleAliasRegistry implements AliasRegistry {
 	 * @see #hasAlias
 	 */
 	protected void checkForAliasCircle(String name, String alias) {
+		/*
+		它主要是为了检查是否存在别名循环的问题，比如，别名alias1对应bean的名称为name1，
+		但是，如果同时还存在别名alias1对应bean的名称为name2，而name2又是bean name1的别名。
+
+
+		相当于同时存在：alias1到name1，alias1到name2，name2再到name1这两个关系，
+		出现了两个起点和重点都相同的循环了，这样就造成了别名循环的问题就会抛异常。
+		 */
 		if (hasAlias(alias, name)) {
 			throw new IllegalStateException("Cannot register alias '" + alias +
 					"' for name '" + name + "': Circular reference - '" +

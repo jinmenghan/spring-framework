@@ -438,6 +438,9 @@ public class BeanDefinitionParserDelegate {
 		}
 		// 4.开始深度解析bean标签，并将解析的结果封装为AbstractBeanDefinition
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
+		/*
+		可以看到，前面解析bean标签下的各种属性和标签都是在方法parseBeanDefinitionElement中完成了，然后得到GenericBeanDefinition类型的beanDefinition。
+		 */
 		if (beanDefinition != null) {
 			// beanName不为空，直接跳过
 			if (!StringUtils.hasText(beanName)) {
@@ -470,6 +473,11 @@ public class BeanDefinitionParserDelegate {
 			}
 			// 5. 根据解析到的beanDefinition，beanName和aliases, 创建一个BeanDefinitionHolder
 			String[] aliasesArray = StringUtils.toStringArray(aliases);
+			/*
+			最后，我们可以看到parseBeanDefinitionElement方法其实就是将beanDefinition，
+			连带着解析得到的别名aliasesArray一起封装到了BeanDefinitionHolder中，
+			BeanDefinitionHolder我们可以理解为是持有BeanDefinition的一个对象而已。
+			 */
 			return new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);
 		}
 
