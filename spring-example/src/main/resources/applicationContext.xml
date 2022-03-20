@@ -3,7 +3,7 @@
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<!--	<bean id="student" class="com.ruyuan.container.Student"/>-->
+	<bean id="student" class="com.ruyuan.container.Student"/>
 
 <!--	<bean id="student" class="com.ruyuan.container.Student2"/>-->
 
@@ -12,12 +12,16 @@
 <!--		</bean>-->
 
 
-	<bean id="student" class="com.ruyuan.container.Student3">
-		<constructor-arg name="name">
-			<value>小明</value>
-		</constructor-arg>
-		<constructor-arg name="age">
-			<value>3</value>
-		</constructor-arg>
-	</bean>
+<!--	<bean id="student" class="com.ruyuan.container.Student3">-->
+<!--		<constructor-arg name="name">-->
+<!--			<value>小明</value>-->
+<!--		</constructor-arg>-->
+<!--		<constructor-arg name="age">-->
+<!--			<value>3</value>-->
+<!--		</constructor-arg>-->
+<!--	</bean>-->
+
+
+	<bean id="myBeanFactoryProcessor" class="com.ruyuan.container.MyBeanFactoryPostProcessor"/>
+
 </beans>

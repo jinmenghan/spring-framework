@@ -3,7 +3,7 @@ package com.ruyuan.container;
 public class Student {
 
 
-	private String name;
+	private String name = "ruyuan";
 	private Integer age;
 
 
