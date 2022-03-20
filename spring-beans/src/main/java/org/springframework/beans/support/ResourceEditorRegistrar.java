@@ -99,7 +99,9 @@ public class ResourceEditorRegistrar implements PropertyEditorRegistrar {
 	 */
 	@Override
 	public void registerCustomEditors(PropertyEditorRegistry registry) {
+		// 翻译一下，大概就是编辑资源的注册器
 		ResourceEditor baseEditor = new ResourceEditor(this.resourceLoader, this.propertyResolver);
+		// 关键内容
 		doRegisterEditor(registry, Resource.class, baseEditor);
 		doRegisterEditor(registry, ContextResource.class, baseEditor);
 		doRegisterEditor(registry, InputStream.class, new InputStreamEditor(baseEditor));
@@ -125,6 +127,8 @@ public class ResourceEditorRegistrar implements PropertyEditorRegistrar {
 	 * otherwise register as a custom editor.
 	 */
 	private void doRegisterEditor(PropertyEditorRegistry registry, Class<?> requiredType, PropertyEditor editor) {
+		// 将这些各类属性类型的以及对应的属性编辑器都注册到registry中
+		// 看到这里我们首先会通过InputStreamEditor中的setAsTest传进来一个string类型的text，然后通过各种解析器得到InputStream
 		if (registry instanceof PropertyEditorRegistrySupport) {
 			((PropertyEditorRegistrySupport) registry).overrideDefaultEditor(requiredType, editor);
 		}

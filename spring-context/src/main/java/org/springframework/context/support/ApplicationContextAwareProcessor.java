@@ -78,9 +78,13 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	@Override
 	@Nullable
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		// 如果不是下面这几种类型的bean，就直接返回bean
 		if (!(bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
 				bean instanceof ResourceLoaderAware || bean instanceof ApplicationEventPublisherAware ||
 				bean instanceof MessageSourceAware || bean instanceof ApplicationContextAware)){
+			// 这几种类型都是感知接口
+			// 查看 Aware类的继承类
+
 			return bean;
 		}
 
@@ -97,6 +101,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 			}, acc);
 		}
 		else {
+			// 核心方法
 			invokeAwareInterfaces(bean);
 		}
 
@@ -104,6 +109,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	}
 
 	private void invokeAwareInterfaces(Object bean) {
+		// 就是在调用这些感知接口的方法，将容器内部的一些对象设置进去
 		if (bean instanceof EnvironmentAware) {
 			((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
 		}

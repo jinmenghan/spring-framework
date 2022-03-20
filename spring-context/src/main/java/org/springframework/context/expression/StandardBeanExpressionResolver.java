@@ -100,6 +100,13 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 	 * @param beanClassLoader the factory's bean class loader
 	 */
 	public StandardBeanExpressionResolver(@Nullable ClassLoader beanClassLoader) {
+		// 翻译一下，就是SPEL表达式解析器，全称为 spring Expression Language未及时我们常说的spring表达式语言
+//		/** Default expression prefix: "#{". */
+//		public static final String DEFAULT_EXPRESSION_PREFIX = "#{";
+//
+//		/** Default expression suffix: "}". */
+//		public static final String DEFAULT_EXPRESSION_SUFFIX = "}";
+
 		this.expressionParser = new SpelExpressionParser(new SpelParserConfiguration(null, beanClassLoader));
 	}
 
