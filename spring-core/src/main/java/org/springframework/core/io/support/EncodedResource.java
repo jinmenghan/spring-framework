@@ -59,6 +59,8 @@ public class EncodedResource implements InputStreamSource {
 	 * @param resource the {@code Resource} to hold (never {@code null})
 	 */
 	public EncodedResource(Resource resource) {
+
+		// 确定 resource资源的编码和字符集
 		this(resource, null, null);
 	}
 
@@ -134,6 +136,9 @@ public class EncodedResource implements InputStreamSource {
 	 * @throws IOException if opening the Reader failed
 	 * @see #requiresReader()
 	 * @see #getInputStream()
+	 *
+	 * 可以看到getReader方法中，首先会通过getInputStream获取Resource的输入流，
+	 * 同时会指定字符集或者编码来创建InputStremReader
 	 */
 	public Reader getReader() throws IOException {
 		if (this.charset != null) {
@@ -143,6 +148,7 @@ public class EncodedResource implements InputStreamSource {
 			return new InputStreamReader(this.resource.getInputStream(), this.encoding);
 		}
 		else {
+			// java JDK 的InputStreamReader
 			return new InputStreamReader(this.resource.getInputStream());
 		}
 	}

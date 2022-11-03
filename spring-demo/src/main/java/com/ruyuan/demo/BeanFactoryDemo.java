@@ -7,8 +7,13 @@ public class BeanFactoryDemo {
 
 	public static void main(String[] args) {
 
+//		XmlBeanFactory beanFactory = new XmlBeanFactory(new ClassPathResource("applicationContext.xml"));
+//		Student student = (Student) beanFactory.getBean("student");
+//		System.out.println(student.getName());
+
 		XmlBeanFactory beanFactory = new XmlBeanFactory(new ClassPathResource("applicationContext.xml"));
-		Student student = (Student) beanFactory.getBean("student");
-		System.out.println(student.getName());
+		BeanNameAwareImpl beanNameAwareImpl = (BeanNameAwareImpl) beanFactory.getBean("beanNameAwareImpl");
+		System.out.println(beanNameAwareImpl.getBeanName());
+
 	}
 }

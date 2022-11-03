@@ -1,6 +1,8 @@
 package com.ruyuan.demo;
 
-public class Student {
+import org.springframework.beans.factory.BeanNameAware;
+
+public class Student implements BeanNameAware {
 
 	private String name = "ruyuan";
 
@@ -13,4 +15,8 @@ public class Student {
 	}
 
 
+	@Override
+	public void setBeanName(String name) {
+		System.out.println("beanName:" + name);
+	}
 }

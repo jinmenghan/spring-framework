@@ -118,6 +118,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	@Nullable
 	private NamespaceHandlerResolver namespaceHandlerResolver;
 
+	/**
+	 * 成员变量是 DefaultDocumentLoader
+	 */
 	private DocumentLoader documentLoader = new DefaultDocumentLoader();
 
 	@Nullable
@@ -307,6 +310,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+		// 将Resource 封装为EncodedResource
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
@@ -330,11 +334,14 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 
+		// 获取EncodedResource中的输入流
 		try (InputStream inputStream = encodedResource.getResource().getInputStream()) {
+			// 通过输入流来构建InputSource，并设置相应的编码
 			InputSource inputSource = new InputSource(inputStream);
 			if (encodedResource.getEncoding() != null) {
 				inputSource.setEncoding(encodedResource.getEncoding());
 			}
+			// 正式开始加在资源
 			return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 		}
 		catch (IOException ex) {
@@ -387,7 +394,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
+			// 根据输入流和Resource，创建xml文件对应的Document
 			Document doc = doLoadDocument(inputSource, resource);
+			// 解析Document并注册bean都spring容器中
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -429,6 +438,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see DocumentLoader#loadDocument
 	 */
 	protected Document doLoadDocument(InputSource inputSource, Resource resource) throws Exception {
+
+		// 委托给documentReader来加载
 		return this.documentLoader.loadDocument(inputSource, getEntityResolver(), this.errorHandler,
 				getValidationModeForResource(resource), isNamespaceAware());
 	}
