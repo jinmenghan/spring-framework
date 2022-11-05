@@ -141,11 +141,13 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Nullable
 	private volatile Object beanClass;
 
+	// 对应属性scope： bean的作用域
 	@Nullable
 	private String scope = SCOPE_DEFAULT;
 
 	private boolean abstractFlag = false;
 
+	// 对应属性lazy init ：是否延迟加在
 	@Nullable
 	private Boolean lazyInit;
 
@@ -158,6 +160,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean autowireCandidate = true;
 
+	// 对应属性primary ： 当出现多个bean候选时，首选含该属性的bean
 	private boolean primary = false;
 
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
@@ -169,6 +172,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean lenientConstructorResolution = true;
 
+	// 对应factory-bean属性
 	@Nullable
 	private String factoryBeanName;
 

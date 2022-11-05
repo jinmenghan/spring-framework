@@ -90,6 +90,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 			this.resourceLoader = (ResourceLoader) this.registry;
 		}
 		else {
+			// 返回 PathMatchingResourcePatternResolver
 			this.resourceLoader = new PathMatchingResourcePatternResolver();
 		}
 

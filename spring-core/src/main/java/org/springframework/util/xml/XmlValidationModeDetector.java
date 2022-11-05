@@ -90,6 +90,7 @@ public class XmlValidationModeDetector {
 	 */
 	public int detectValidationMode(InputStream inputStream) throws IOException {
 		// Peek into the file to look for DOCTYPE.
+		// 1. 层层包装，讲输入流InputStream包装层一个缓冲字符串输入流
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		try {
 			boolean isDtdValidated = false;
@@ -99,6 +100,7 @@ public class XmlValidationModeDetector {
 				if (this.inComment || !StringUtils.hasText(content)) {
 					continue;
 				}
+				// 2. 内容中，是否包含“DOCTYPE”
 				if (hasDoctype(content)) {
 					isDtdValidated = true;
 					break;

@@ -113,14 +113,17 @@ public class PluggableSchemaResolver implements EntityResolver {
 		}
 
 		if (systemId != null) {
+			// 1.如果systemId非空，就从schemaMapping中，通过systemId获取xsd对应的位置路径
 			String resourceLocation = getSchemaMappings().get(systemId);
 			if (resourceLocation == null && systemId.startsWith("https:")) {
 				// Retrieve canonical http schema mapping even for https declaration
 				resourceLocation = getSchemaMappings().get("http:" + systemId.substring(6));
 			}
 			if (resourceLocation != null) {
+				// 2.如果resourceLocation不为空，就直接从路径中，加在响应的资源
 				Resource resource = new ClassPathResource(resourceLocation, this.classLoader);
 				try {
+					// 3. 讲Resource封装为InputStream并返回
 					InputSource source = new InputSource(resource.getInputStream());
 					source.setPublicId(publicId);
 					source.setSystemId(systemId);
@@ -154,12 +157,14 @@ public class PluggableSchemaResolver implements EntityResolver {
 						logger.trace("Loading schema mappings from [" + this.schemaMappingsLocation + "]");
 					}
 					try {
+						// 1. 从schemaMappingLocation中，获取所有的属性
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.schemaMappingsLocation, this.classLoader);
 						if (logger.isTraceEnabled()) {
 							logger.trace("Loaded schema mappings: " + mappings);
 						}
 						schemaMappings = new ConcurrentHashMap<>(mappings.size());
+						// 2. 讲偶去到的属性封装成schemaMappings,并返回
 						CollectionUtils.mergePropertiesIntoMap(mappings, schemaMappings);
 						this.schemaMappings = schemaMappings;
 					}

@@ -145,6 +145,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * in the form of a BeanDefinitionRegistry
 	 */
 	public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
+		// 首先进入构造方法
 		super(registry);
 	}
 
@@ -273,6 +274,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 				this.entityResolver = new ResourceEntityResolver(resourceLoader);
 			}
 			else {
+				// 默认加在 DelegatingEntityResolver， resourceLoader 未空
 				this.entityResolver = new DelegatingEntityResolver(getBeanClassLoader());
 			}
 		}
@@ -394,9 +396,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
-			// 根据输入流和Resource，创建xml文件对应的Document
+			// 1.根据输入流和Resource，创建xml文件对应的Document
 			Document doc = doLoadDocument(inputSource, resource);
-			// 解析Document并注册bean都spring容器中
+			// 2.解析Document并注册bean都spring容器中
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -453,10 +455,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #detectValidationMode
 	 */
 	protected int getValidationModeForResource(Resource resource) {
+		// 1. 默认获取的校验类型为 VALIDATION_AUTO
 		int validationModeToUse = getValidationMode();
 		if (validationModeToUse != VALIDATION_AUTO) {
 			return validationModeToUse;
 		}
+		// 2. 自动监测校验模式
 		int detectedMode = detectValidationMode(resource);
 		if (detectedMode != VALIDATION_AUTO) {
 			return detectedMode;
@@ -485,6 +489,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 		InputStream inputStream;
 		try {
+			// 1. 获取resource的输入流
 			inputStream = resource.getInputStream();
 		}
 		catch (IOException ex) {
@@ -495,6 +500,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		}
 
 		try {
+			// 2. 委托 validationModeDetector 的 detectValidationMode 方法去检测
 			return this.validationModeDetector.detectValidationMode(inputStream);
 		}
 		catch (IOException ex) {
@@ -517,9 +523,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 1. 通过反射，创建对象 DefaultBeanDefinitionDocumentReader
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 2. 获取Spring容器中已经注册的bean的数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		// 3. 通过documentReader解析Document，并将解析分析出来的bean注入到spring容器中
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		// 4. 获取本次注入bean的数量，容器中总的bean的数量 - 本次注入钱spring容器bean的数量
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 
@@ -530,6 +540,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #setDocumentReaderClass
 	 */
 	protected BeanDefinitionDocumentReader createBeanDefinitionDocumentReader() {
+		// 通过反射，创建documentReaderClass类
 		return BeanUtils.instantiateClass(this.documentReaderClass);
 	}
 
