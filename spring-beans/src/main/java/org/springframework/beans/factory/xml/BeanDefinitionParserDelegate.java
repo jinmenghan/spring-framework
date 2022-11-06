@@ -545,7 +545,7 @@ public class BeanDefinitionParserDelegate {
 			bd.setResource(this.readerContext.getResource());
 			bd.setSource(extractSource(ele));
 
-			// 返回 AbstractBeanDefinition
+			// 6、返回 AbstractBeanDefinition
 			return bd;
 		}
 		catch (ClassNotFoundException ex) {
