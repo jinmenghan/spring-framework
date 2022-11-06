@@ -516,6 +516,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public void validateRequiredProperties() throws MissingRequiredPropertiesException {
+		// 委托给成员变量 propertyResolver 的方法 validateRequiredProperties处理
 		this.propertyResolver.validateRequiredProperties();
 	}
 

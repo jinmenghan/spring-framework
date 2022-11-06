@@ -601,8 +601,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void prepareRefresh() {
 		// Switch to active.
+		// 设置文件的初始化时间
 		this.startupDate = System.currentTimeMillis();
+		// 谁知容器状态为closed为未关闭状态
 		this.closed.set(false);
+		// active设置为激活状态
 		this.active.set(true);
 
 		if (logger.isDebugEnabled()) {
@@ -615,6 +618,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		// 空实现，留给子类去实现
+		// 目的是在上下文环境中，解析各种${}参数占位符
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
@@ -650,6 +655,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @return the fresh BeanFactory instance
 	 * @see #refreshBeanFactory()
 	 * @see #getBeanFactory()
+	 * 初始化初级容器BeanFactory，并解析xml文件
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 		refreshBeanFactory();

@@ -119,14 +119,20 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		// 判断beanFactory是否存在
 		if (hasBeanFactory()) {
+			// 销毁BeanFactory中的所有的bean
 			destroyBeans();
+			// 关闭容器BeanFactory
 			closeBeanFactory();
 		}
 		try {
+			// 创建spring初级容器BeanFactory
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
+			// 定制化Spring初级容器beanFactory
 			customizeBeanFactory(beanFactory);
+			// 开始解析并加在xml文件中的bean
 			loadBeanDefinitions(beanFactory);
 			this.beanFactory = beanFactory;
 		}
@@ -158,11 +164,14 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * i.e. has been refreshed at least once and not been closed yet.
 	 */
 	protected final boolean hasBeanFactory() {
+		// 第一次没有创建beanFactory ，所以返回false
 		return (this.beanFactory != null);
 	}
 
 	@Override
 	public final ConfigurableListableBeanFactory getBeanFactory() {
+		// 可以看到方法中，就是是获取了一个beanFactory，为什么不能直接获取到beanFactory呢，我们推测肯定是在getBeanFactory
+		// 方法前面的refreshBeanFactory方法中就把beanFactory这个Spring容器初始化完成了
 		DefaultListableBeanFactory beanFactory = this.beanFactory;
 		if (beanFactory == null) {
 			throw new IllegalStateException("BeanFactory not initialized or already closed - " +
@@ -194,6 +203,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#setAllowRawInjectionDespiteWrapping
 	 */
 	protected DefaultListableBeanFactory createBeanFactory() {
+		// 创建一个 DefaultListableBeanFactory 类型的对象
 		return new DefaultListableBeanFactory(getInternalParentBeanFactory());
 	}
 
@@ -212,9 +222,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see DefaultListableBeanFactory#setAllowEagerClassLoading
 	 */
 	protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
+		// 是否允许BeanDefinition在spring容器中被覆盖
 		if (this.allowBeanDefinitionOverriding != null) {
 			beanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
+		// 是否允许多个ben之间存在循环依赖引用
 		if (this.allowCircularReferences != null) {
 			beanFactory.setAllowCircularReferences(this.allowCircularReferences);
 		}
