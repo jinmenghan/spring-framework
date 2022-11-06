@@ -82,6 +82,7 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 * @throws BeansException if context creation failed
 	 */
 	public ClassPathXmlApplicationContext(String configLocation) throws BeansException {
+		// 将configLocation封装成String数组传入
 		this(new String[] {configLocation}, true, null);
 	}
 

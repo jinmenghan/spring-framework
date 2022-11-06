@@ -227,6 +227,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Create a new AbstractApplicationContext with no parent.
 	 */
 	public AbstractApplicationContext() {
+		// 可以看到这里应该是在初始化一个成员变量resourcePatternResolver，那么getResourcePatternResolver方法能获取到什么呢
 		this.resourcePatternResolver = getResourcePatternResolver();
 	}
 
@@ -456,6 +457,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
 	 */
 	protected ResourcePatternResolver getResourcePatternResolver() {
+		// 初始化了一个 PathMatchingResourcePatternResolver 类型，根据我们推测应该是一个匹配路径的资源解析器，应该是获取我们的xml文件资源的一个组件
 		return new PathMatchingResourcePatternResolver(this);
 	}
 
@@ -476,6 +478,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void setParent(@Nullable ApplicationContext parent) {
 		this.parent = parent;
 		if (parent != null) {
+			// 设置环境
 			Environment parentEnvironment = parent.getEnvironment();
 			if (parentEnvironment instanceof ConfigurableEnvironment) {
 				getEnvironment().merge((ConfigurableEnvironment) parentEnvironment);
@@ -517,40 +520,54 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
+			// 初始化上下文信息
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			// 初始化初级容器BeanFactory，并解析xml文件
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// 对spring容器beanFactory做一些准备工作
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// 空实现，留给子类去拓展实现
+				// 用于注册特殊的后处理器来加在特殊的一些bean
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				// 执行beanFactory即spring容器级别的后处理器
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 在spring容器中，注册bean的后处理器
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				// 在spring容器中，初始化消息源MessageSource
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 在spring容器中，初始化时间广播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 空实现，留给子类去拓展实现
+				// 用于在实例化bean之前，做一些其他初始化bean的工作
 				onRefresh();
 
 				// Check for listener beans and register them.
+				// 在spring容器中，初始化各种监听器
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 预先实例化那些非延迟加在的单例bean
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				// 初始化声明周期处理器，并发出形影的时间进行通知
 				finishRefresh();
 			}
 

@@ -108,6 +108,8 @@ public interface PropertyResolver {
 	 * @return the resolved String (never {@code null})
 	 * @throws IllegalArgumentException if given text is {@code null}
 	 * or if any placeholders are unresolvable
+	 * 通过响应的属性值，来解析text中的${}占位符，如果没有默认的属性值替换占位符的话
+	 * 就会报非法餐胡的异常 IllegalArgumentException
 	 */
 	String resolveRequiredPlaceholders(String text) throws IllegalArgumentException;
 
