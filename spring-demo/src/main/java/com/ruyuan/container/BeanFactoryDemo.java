@@ -1,9 +1,7 @@
-package com.ruyuan.demo;
+package com.ruyuan.container;
 
-import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 
 public class BeanFactoryDemo {
 
@@ -18,6 +16,10 @@ public class BeanFactoryDemo {
 //		System.out.println(beanNameAwareImpl.getBeanName());
 
 
+
+//		ApplicationContext beanFactory = new MyClassPathXmlApplicationContext("applicationContext.xml");
+//		Student student = (Student) beanFactory.getBean("student");
+//		System.out.println(student.getName());
 
 		ApplicationContext beanFactory = new ClassPathXmlApplicationContext("applicationContext.xml");
 		Student student = (Student) beanFactory.getBean("student");

@@ -1,4 +1,4 @@
-package com.ruyuan.demo.xml;
+package com.ruyuan.container.xml;
 
 public class Student {
 
