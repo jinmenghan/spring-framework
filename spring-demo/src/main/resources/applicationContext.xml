@@ -9,6 +9,7 @@
 <!--		<property name="beanName" value="beanName"></property>-->
 <!--	</bean>-->
 
-	<bean id="myBeanFactoryProcessor" class="com.ruyuan.container.factorypostprocessor.MyBeanFactoryPostProcessor"></bean>
+<!--	<bean id="myBeanFactoryProcessor" class="com.ruyuan.container.factorypostprocessor.MyBeanFactoryPostProcessor"></bean>-->
 
+	<bean id ="studentPostProcessor" class="com.ruyuan.container.beanpostprocessor.StudentPostProcessor"></bean>
 </beans>
