@@ -80,13 +80,17 @@ public abstract class BeanFactoryUtils {
 	 */
 	public static String transformedBeanName(String name) {
 		Assert.notNull(name, "'name' must not be null");
+		// 如果name不是以符号“&”为前缀的话，直接返回name
 		if (!name.startsWith(BeanFactory.FACTORY_BEAN_PREFIX)) {
 			return name;
 		}
+		// 但是，如果name以&为前缀的话
 		return transformedBeanNameCache.computeIfAbsent(name, beanName -> {
 			do {
+				// 截取name中符号“&”，后面的内容
 				beanName = beanName.substring(BeanFactory.FACTORY_BEAN_PREFIX.length());
 			}
+			// 直到name的前缀中不存在符号“&”
 			while (beanName.startsWith(BeanFactory.FACTORY_BEAN_PREFIX));
 			return beanName;
 		});
