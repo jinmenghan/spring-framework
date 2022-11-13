@@ -428,8 +428,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throws BeansException {
 
 		Object result = existingBean;
+		// 执行所有的后处理的中的所有后置处理方法
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
 			Object current = processor.postProcessAfterInitialization(result, beanName);
+			/*
+			因为默认情况下是没有注册后处理器InstantiationAwareBeanPostProcessor的，所以这块逻辑我们暂时是不会执行的
+			，但是Spring给我们提供了这样的一套框架，让我们在需要扩展Spring功能的时候有了非常好的切入点。
+			 */
 			if (current == null) {
 				return result;
 			}
@@ -487,6 +492,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Make sure bean class is actually resolved at this point, and
 		// clone the bean definition in case of a dynamically resolved Class
 		// which cannot be stored in the shared merged bean definition.
+		// 解析BeanDefinition中的class属性，并通过反射创建对应的class
 		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
 			mbdToUse = new RootBeanDefinition(mbd);
@@ -495,6 +501,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Prepare method overrides.
 		try {
+			// 预先标记没有重载的方法
 			mbdToUse.prepareMethodOverrides();
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -504,6 +511,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			// 这里提供了一个机会，可以通过后处理器BeanPostProcessors创建并返回一个代理的bean的实例
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -515,6 +523,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			// 实际开始创建bean
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -1108,6 +1117,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param beanName the name of the bean
 	 * @param mbd the bean definition for the bean
 	 * @return the shortcut-determined bean instance, or {@code null} if none
+	 *
+	 * 默认情况下，BeanDefinition中的属性beforeInstantiationResolved为null，
+	 * 并且，我们最开始也没有注册任何相关的后处理器，
+	 * 所以方法hasInstantiationAwareBeanPostProcessors返回的结果也是false，
+	 * 所以方法resolveBeforeInstantiation直接就return掉了。
 	 */
 	@Nullable
 	protected Object resolveBeforeInstantiation(String beanName, RootBeanDefinition mbd) {
@@ -1120,6 +1134,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+						/*
+						和我们刚说的一样，如果通过前置处理方法applyBeanPostProcessorsBeforeInstantiation得到bean的实例不为空
+						，此时就会调用方法applyBeanPostProcessorsBeforeInstantiation。
+						 */
 					}
 				}
 			}
@@ -1141,9 +1159,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	@Nullable
 	protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
+		// 获取注册号的beanPostProcessor
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+			// 如果这些后处理器是 InstantiationAwareBeanPostProcessor的实例
 			if (bp instanceof InstantiationAwareBeanPostProcessor) {
 				InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+				// 那就执行这些后处理器的前置处理方法 postProcessBeforeInstantiation
 				Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
 				if (result != null) {
 					return result;
