@@ -1133,6 +1133,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 */
 	protected boolean isPrototypeCurrentlyInCreation(String beanName) {
 		Object curVal = this.prototypesCurrentlyInCreation.get();
+		// 如果curVal和beanName相同，或者curVal作为一个集合，包含beanName
 		return (curVal != null &&
 				(curVal.equals(beanName) || (curVal instanceof Set && ((Set<?>) curVal).contains(beanName))));
 	}
@@ -1237,7 +1238,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @return the original bean name
 	 */
 	protected String originalBeanName(String name) {
+		// 先获取bean的实际名称
 		String beanName = transformedBeanName(name);
+		// 如果传入的名称中，是以“&”为前缀的，就添加上前缀“&”
 		if (name.startsWith(FACTORY_BEAN_PREFIX)) {
 			beanName = FACTORY_BEAN_PREFIX + beanName;
 		}
@@ -1356,6 +1359,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = this.mergedBeanDefinitions.get(beanName);
 			}
 
+			// 缓存中的mdb默认为空
 			if (mbd == null || mbd.stale) {
 				previous = mbd;
 				if (bd.getParentName() == null) {
@@ -1363,18 +1367,25 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					if (bd instanceof RootBeanDefinition) {
 						mbd = ((RootBeanDefinition) bd).cloneBeanDefinition();
 					}
+					// 创建RootBenDefinition来封装原始的BeanDefinition(GenericBeanDefinition)
 					else {
 						mbd = new RootBeanDefinition(bd);
 					}
 				}
 				else {
+					// 处理父类bean的BeanDefinition
+
 					// Child bean definition: needs to be merged with parent.
 					BeanDefinition pbd;
 					try {
+						// 获取父类bean的实际名称
 						String parentBeanName = transformedBeanName(bd.getParentName());
+						// 如果父类bean的名称，和当前bean名称不相同
 						if (!beanName.equals(parentBeanName)) {
+							// 递归调用： 获取父类bean的RootBeanDefinition
 							pbd = getMergedBeanDefinition(parentBeanName);
 						}
+						// 如果父类bean的名称，和当前bean的名称一致，那就到父类容器中获取BeanDefinition
 						else {
 							BeanFactory parent = getParentBeanFactory();
 							if (parent instanceof ConfigurableBeanFactory) {
@@ -1397,6 +1408,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Set default singleton scope, if not configured before.
+				// 重点：默认BeanDefinition中，bean的类型为单例
 				if (!StringUtils.hasLength(mbd.getScope())) {
 					mbd.setScope(SCOPE_SINGLETON);
 				}
@@ -1412,6 +1424,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				// Cache the merged bean definition for the time being
 				// (it might still get re-merged later on in order to pick up metadata changes)
 				if (containingBd == null && isCacheBeanMetadata()) {
+					// 将封装好的RootBeanDefinition添加到缓存中
 					this.mergedBeanDefinitions.put(beanName, mbd);
 				}
 			}
@@ -1419,6 +1432,19 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				copyRelevantMergedBeanDefinitionCaches(previous, mbd);
 			}
 			return mbd;
+
+			/*
+			可以看到，Spring时不时的还真的会给我们一点惊喜，一眼看过去这个方法中的逻辑还真够呛的，其实，以我们目前的知识储备来分析的话，这个方法中的逻辑其实也能看懂，主要就干了以下几件事：
+
+			（1）通过创建一个RootBeanDefinition，封装从Spring容器中获取到的BeanDefinition，因为容器中的BeanDefinition是GenericBeanDefinition类型的，
+			     是没有记录父子bean标签的关系的，Spring在实例化前需要通过RootBeanDefinition来组织一下。
+
+			（2）如果说当前的bean配置了父类bean，那就先封装父类bean的RootBeanDefinition，否则的话，直接封装当前bean对应的BeanDefinition即可。
+
+			（3）将RootBeanDefinition中的类型设置为单例的，从这里就可以印证我们之前说的，也就是Spring中bean默认的类型就是单例的。
+
+			（4）最后，Spring会将封装好的RootBeanDefinition添加到缓存中。
+			 */
 		}
 	}
 
@@ -1448,7 +1474,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 */
 	protected void checkMergedBeanDefinition(RootBeanDefinition mbd, String beanName, @Nullable Object[] args)
 			throws BeanDefinitionStoreException {
-
+		// 检查一下BeanDefinition中的属性AbstractFlag是否为true
 		if (mbd.isAbstract()) {
 			throw new BeanIsAbstractException(beanName);
 		}
@@ -1754,7 +1780,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				if (!this.alreadyCreated.contains(beanName)) {
 					// Let the bean definition get re-merged now that we're actually creating
 					// the bean... just in case some of its metadata changed in the meantime.
+					// 清理缓存过的所有的beanName对应的BeanDefinition相关的信息
 					clearMergedBeanDefinition(beanName);
+					// 标记beanName对应的bean已经创建了
 					this.alreadyCreated.add(beanName);
 				}
 			}

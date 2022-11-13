@@ -425,7 +425,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	public void registerDependentBean(String beanName, String dependentBeanName) {
 		String canonicalName = canonicalName(beanName);
 
+		// 依赖的bean名称 --> 集合(beanName)
 		synchronized (this.dependentBeanMap) {
+			// 如果dependentBeanMap中不存在名称为canonicalName的key，就创建一个空的LinkedHashSet
 			Set<String> dependentBeans =
 					this.dependentBeanMap.computeIfAbsent(canonicalName, k -> new LinkedHashSet<>(8));
 			if (!dependentBeans.add(dependentBeanName)) {
@@ -433,6 +435,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 			}
 		}
 
+		// beanName --> 集合(依赖的bean名称)
 		synchronized (this.dependenciesForBeanMap) {
 			Set<String> dependenciesForBean =
 					this.dependenciesForBeanMap.computeIfAbsent(dependentBeanName, k -> new LinkedHashSet<>(8));
@@ -453,15 +456,26 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		}
 	}
 
+	/*
+	我们可以知道的是，dependentBeans其实就是beanName依赖的那些bean名称的集合，统一都被缓存在了集合dependentBeanMap中，
+	可以看到，接下来会判断下当前bean依赖的dependentBeanName，是否已经存在于beanName依赖的集合dependentBeans中。
+
+	我们可以举个例子，假如当前的beanName依赖的bean的集合元素为：beanName1、beanName2和beanName3，它们存放于集合dependentBeans中，
+	如果dependentBeanName的名称为beanName1，此时就和集合dependentBeans中的元素重复了，所以就直接返回true了，这是第一种情况。
+	 */
 	private boolean isDependent(String beanName, String dependentBeanName, @Nullable Set<String> alreadySeen) {
 		if (alreadySeen != null && alreadySeen.contains(beanName)) {
 			return false;
 		}
+		// 获取bean的名称
 		String canonicalName = canonicalName(beanName);
+		// 获取bean依赖bean的名称
 		Set<String> dependentBeans = this.dependentBeanMap.get(canonicalName);
 		if (dependentBeans == null) {
 			return false;
 		}
+
+		// 当前bean的依赖中，已经是否包含该bean的名称，直接返回true
 		if (dependentBeans.contains(dependentBeanName)) {
 			return true;
 		}
@@ -470,6 +484,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				alreadySeen = new HashSet<>();
 			}
 			alreadySeen.add(beanName);
+			// 判断dependentBeanName是否存在于beanName依赖链上
 			if (isDependent(transitiveDependency, dependentBeanName, alreadySeen)) {
 				return true;
 			}
