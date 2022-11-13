@@ -27,11 +27,14 @@
 <!--	</bean>-->
 
 
-	<bean id="student1" class="com.ruyuan.container.cycle.setter.Student1">
-		<constructor-arg name="student2" ref="student2"/>
-	</bean>
+<!--	<bean id="student1" class="com.ruyuan.container.cycle.setter.Student1">-->
+<!--		<constructor-arg name="student2" ref="student2"/>-->
+<!--	</bean>-->
 
-	<bean id="student2" class="com.ruyuan.container.cycle.setter.Student2">
-		<constructor-arg name="student1" ref="student1"/>
-	</bean>
+<!--	<bean id="student2" class="com.ruyuan.container.cycle.setter.Student2">-->
+<!--		<constructor-arg name="student1" ref="student1"/>-->
+<!--	</bean>-->
+
+
+	<bean id="student" class="com.ruyuan.container.factorybean.StudentFactoryBean"></bean>
 </beans>

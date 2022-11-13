@@ -1821,41 +1821,57 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
 
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
+		// 判断参数软进来的name，是否以“&” 为前缀
 		if (BeanFactoryUtils.isFactoryDereference(name)) {
 			if (beanInstance instanceof NullBean) {
 				return beanInstance;
 			}
+			// 如果name以“&”我前缀，那么必须得要是FactoryBean的实例，否则抛异常
 			if (!(beanInstance instanceof FactoryBean)) {
 				throw new BeanIsNotAFactoryException(beanName, beanInstance.getClass());
 			}
 			if (mbd != null) {
+				// 通过BeanDefinition中的属性isFactoryBean
+				// 标记BeanDefinition对应的是FactoryBean类型的bean
 				mbd.isFactoryBean = true;
 			}
+			// 直接返回FactoryBean的实例
 			return beanInstance;
 		}
 
 		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
+		// 如果单例bean beanInstance的名称name， 既不是以“&”为前缀的
+		// 并且beanInstance也不是FactoryBean的实例，直接返回该单例bean
 		if (!(beanInstance instanceof FactoryBean)) {
 			return beanInstance;
 		}
 
+		// 以下是对name不是以“&” 为前缀，切beanInstance为FactoryBean的实例的处理情况
+		// 说明beanInstance为FactoryBean的实例，会通过FactoryBean来实例化一个bean
+
+		// 通过FactoryBean来实例化的bean
 		Object object = null;
 		if (mbd != null) {
+			// 标记BeanDefinition对应的FactoryBean类型的bean
 			mbd.isFactoryBean = true;
 		}
 		else {
+			// 从缓存中，获取FactoryBean实例化好的bean
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
 			// Return bean instance from factory.
+			// 强制转换为FactoryBean
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
 			// Caches object obtained from FactoryBean if it is a singleton.
 			if (mbd == null && containsBeanDefinition(beanName)) {
+				// 获取BeanDefinition，并封装为RootBeanDefinition
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+			// 通过FactoryBean来实例化bean
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
 		return object;
